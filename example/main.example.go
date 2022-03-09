@@ -22,4 +22,13 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("The Contract was filled!\n%s", (<-mb).String())
+	cnt2 := hermes.NewContract(*s3.ID(), "ping", "2nd-contract-start")
+	cnt2.AppendNext(*s4.ID(), "fail")
+	cnt2.AppendNext(*s2.ID(), "ping")
+	mb, err = cnt2.Send()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("The Contract was filled!\n%s", (<-mb).String())
+
 }
