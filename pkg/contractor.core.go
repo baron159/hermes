@@ -23,7 +23,7 @@ var jobLoopBuff int
 var maxWorkers int
 
 func init() {
-	flag.IntVar(&jobLoopBuff, "lp", 3, "The max size of the queue for the Job Loop")
+	flag.IntVar(&jobLoopBuff, "lp", 6, "The max size of the queue for the Job Loop")
 	flag.IntVar(&maxWorkers, "mx", 10, "The max number of workers that a Contractor can have, should not be bigger than the queue")
 }
 

@@ -24,8 +24,8 @@ func main() {
 	rndCommFn := func() (pkg.ServiceID, pkg.ActionID) {
 		return serLt[rand.Intn(len(serLt))], actLt[rand.Intn(len(actLt))]
 	}
-	const clients = 20
-	const clientCycles = 4000
+	const clients = 10
+	const clientCycles = 1000
 	completed := make(chan bool, clients)
 	for client := 0; client < clients; client++ {
 		go func(clt int, done chan bool) {
