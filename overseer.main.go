@@ -41,7 +41,7 @@ func CreateServiceID(id string) (pkg.ServiceID, error) {
 
 // RegisterService takes in a pkg.ServiceDef and makes sure that one does not already exist. It then
 // creates a pkg.Contractor for the Service Definition, adds it to the _Overseer Map and Starts the Contractor
-func RegisterService(ser pkg.ServiceDef) error {
+func RegisterService(ser pkg.ServiceDef, args ...int) error {
 	for s, _ := range _Overseer().serviceMap {
 		if ser.ID().String() == s.String() {
 			return fmt.Errorf("service def w/ID: %s already in use", ser.ID())
@@ -49,7 +49,7 @@ func RegisterService(ser pkg.ServiceDef) error {
 	}
 	ctr := pkg.CreateContractor(ser)
 	_Overseer().serviceMap[ser.ID()] = ctr
-	if err := ctr.Start(); err != nil {
+	if err := ctr.Start(args...); err != nil {
 		return err
 	}
 	return nil

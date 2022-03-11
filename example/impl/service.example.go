@@ -18,7 +18,7 @@ func CreateService(name string) *SimpleService {
 	} else {
 		rtnService.id = &i
 	}
-	if err := hermes.RegisterService(rtnService); err != nil {
+	if err := hermes.RegisterService(rtnService, 5); err != nil {
 		panic(err)
 	}
 	return rtnService

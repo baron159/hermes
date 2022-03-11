@@ -2,6 +2,8 @@ package pkg
 
 import (
 	"flag"
+	"fmt"
+	"math"
 	"sync"
 	"time"
 )
@@ -22,7 +24,7 @@ var maxWorkers int
 
 func init() {
 	flag.IntVar(&jobLoopBuff, "lp", 3, "The max size of the queue for the Job Loop")
-	flag.IntVar(&maxWorkers, "mx", 3, "The max number of workers that a Contractor can have, should not be bigger than the queue")
+	flag.IntVar(&maxWorkers, "mx", 10, "The max number of workers that a Contractor can have, should not be bigger than the queue")
 }
 
 func CreateContractor(pur ServiceDef) *Contractor {
@@ -41,23 +43,27 @@ func (cr *Contractor) Start(args ...int) error {
 		cr.jobQueue = jLoop
 		cr.startTime = time.Now().UnixMilli()
 		// How many workers to hire
-		//wkr := 1
-		//if len(args) > 0 && int(math.Abs(float64(args[0]))) <= maxWorkers {
-		//	wkr = int(math.Abs(float64(args[0])))
-		//}
-		// Set-up Job Loop Listener that handles the fetching and calling of the handler functions
-		go func(ct *Contractor) {
-			// Hire the number of workers we need
-			for c := range ct.jobQueue {
-				_, actId := c.CurrentStep()
-				if act, ok := ct.purpose.GetHandlers()[actId]; !ok {
-					panic("contract given to job loop without know handler")
-				} else {
-					act.GetHandler()(&c)
-					c.next()
+		wkr := 1
+		if len(args) > 0 && int(math.Abs(float64(args[0]))) <= maxWorkers {
+			wkr = int(math.Abs(float64(args[0])))
+		}
+		for w := 0; w < wkr; w++ {
+			// Set-up Job Loop Listener that handles the fetching and calling of the handler functions
+			go func(ct *Contractor, wk int) {
+				// Hire the number of workers we need
+				for c := range ct.jobQueue {
+					fmt.Printf("Ctr: %s worker: %d handling %s\n", ct.purpose.ID().Id, wk, c.id)
+					_, actId := c.CurrentStep()
+					if act, ok := ct.purpose.GetHandlers()[actId]; !ok {
+						panic("contract given to job loop without know handler")
+					} else {
+						act.GetHandler()(&c)
+						c.next()
+					}
 				}
-			}
-		}(cr)
+			}(cr, w)
+		}
+
 		// Set-up Contractor listener listener
 		go func(ct *Contractor) {
 			for c := range ct.listener {
