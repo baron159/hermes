@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"flag"
+	"math"
 	"sync"
 	"time"
 )
@@ -17,12 +18,14 @@ type Contractor struct {
 	once              sync.Once
 }
 
-var jobLoopBuff int
+var maxLoopBuff int
 var maxWorkers int
 
+const DefaultLoopBuffSize = 3
+
 func init() {
-	flag.IntVar(&jobLoopBuff, "lp", 3, "The max size of the queue for the Job Loop")
-	flag.IntVar(&maxWorkers, "mx", 3, "The max number of workers that a Contractor can have, should not be bigger than the queue")
+	flag.IntVar(&maxLoopBuff, "mq", 5, "The max size of the queue for the Job Loop")
+	flag.IntVar(&maxWorkers, "mx", 5, "The max number of workers that a Contractor can have, should not be bigger than the queue")
 }
 
 func CreateContractor(pur ServiceDef) *Contractor {
@@ -35,29 +38,47 @@ func CreateContractor(pur ServiceDef) *Contractor {
 	}
 }
 
+// Start  notify loop off, also kicking off the workers. Takes in optional int params that control the queue size and number of workers
+/*
+ Current args:
+	[0] - Worker Count: the number of separate worker loops are notified on a first-available worker
+	[1] - Queue Length: the size of the buffer for the worker. Note: this should never be less than WC
+*/
 func (cr *Contractor) Start(args ...int) error {
 	cr.once.Do(func() {
-		jLoop := make(chan Contract, jobLoopBuff)
+		// How many workers
+		wkr := 1
+		if len(args) > 0 && int(math.Abs(float64(args[0]))) <= maxWorkers {
+			wkr = int(math.Abs(float64(args[0])))
+		}
+		// Set up the channel queue
+		queue := DefaultLoopBuffSize
+		if len(args) > 1 && int(math.Abs(float64(args[1]))) <= maxLoopBuff {
+			queue = int(math.Abs(float64(args[1])))
+			if queue < wkr {
+				println("The queue should not be smaller than the total worker pool")
+				queue = wkr
+			}
+		}
+		jLoop := make(chan Contract, queue)
 		cr.jobQueue = jLoop
 		cr.startTime = time.Now().UnixMilli()
-		// How many workers to hire
-		//wkr := 1
-		//if len(args) > 0 && int(math.Abs(float64(args[0]))) <= maxWorkers {
-		//	wkr = int(math.Abs(float64(args[0])))
-		//}
-		// Set-up Job Loop Listener that handles the fetching and calling of the handler functions
-		go func(ct *Contractor) {
-			// Hire the number of workers we need
-			for c := range ct.jobQueue {
-				_, actId := c.CurrentStep()
-				if act, ok := ct.purpose.GetHandlers()[actId]; !ok {
-					panic("contract given to job loop without know handler")
-				} else {
-					act.GetHandler()(&c)
-					c.next()
+		for w := 0; w < wkr; w++ {
+			// Set-up Job Loop Listener that handles the fetching and calling of the handler functions
+			go func(ct *Contractor, wk int) {
+				// Hire the number of workers we need
+				for c := range ct.jobQueue {
+					_, actId := c.CurrentStep()
+					if act, ok := ct.purpose.GetHandlers()[actId]; !ok {
+						panic("contract given to job loop without know handler")
+					} else {
+						act.GetHandler()(&c)
+						c.next()
+					}
 				}
-			}
-		}(cr)
+			}(cr, w)
+		}
+
 		// Set-up Contractor listener listener
 		go func(ct *Contractor) {
 			for c := range ct.listener {

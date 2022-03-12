@@ -144,3 +144,4 @@ func (c Contract) String() string {
 		c.Payload, c.Err, c.completed, c.nexts, c.prevs,
 	)
 }
+func (c Contract) StartTime() int64 { return c.startStamp }
