@@ -106,6 +106,8 @@ func (cr *Contractor) Term() error {
 	panic("fast term")
 }
 
+// CheckQueue returns the number of things in queue, and a bool on where the queue is filled
+//  it should be noted that both these values can change from one instance to the next
 func (cr *Contractor) CheckQueue() (qLen int, filled bool) {
 	return len(cr.jobQueue), len(cr.jobQueue) == cap(cr.jobQueue)
 }

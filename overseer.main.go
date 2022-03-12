@@ -28,6 +28,7 @@ func _Overseer() *overseer {
 }
 
 // CreateServiceID is used to wrap your service names in a structure for internal use
+//  This must be used before RegisterService
 func CreateServiceID(id string) (pkg.ServiceID, error) {
 	for i, _ := range _Overseer().serviceMap {
 		if i.Id == id {
@@ -60,6 +61,7 @@ func RegisterService(ser pkg.ServiceDef, args ...int) error {
 	return nil
 }
 
+// ListServices returns a list of service IDs from currently active services
 func ListServices() (rtnLt []pkg.ServiceID) {
 	for s, _ := range _Overseer().serviceMap {
 		rtnLt = append(rtnLt, *s)
@@ -67,6 +69,7 @@ func ListServices() (rtnLt []pkg.ServiceID) {
 	return
 }
 
+// NewContract is the starting point for creating a new request from one or more services
 func NewContract(frtSer pkg.ServiceID, act pkg.ActionID, args ...string) *pkg.Contract {
 	// TODO make sure the service we are being passed is legit, validate action too?
 	return pkg.CreateContract(frtSer, act, args...)
