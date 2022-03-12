@@ -14,17 +14,14 @@ func main() {
 	s2 := impl.CreateService("S2")
 	s3 := impl.CreateService("S3")
 	s4 := impl.CreateService("S4")
-	//cnt := hermes.NewContract(*s1.ID(), "bar", "1st-contract-start")
-	//cnt.AppendNext(*s3.ID(), "foo")
-	//cnt.AppendNext(*s4.ID(), "ping")
-	//cnt.AppendNext(*s2.ID(), "ping")
-	//cnt.AppendNext(*s1.ID(), "foo")
+	// List of IDs
 	serLt := []pkg.ServiceID{*s1.ID(), *s2.ID(), *s3.ID(), *s4.ID()}
+	// List of Actions
 	actLt := pkg.ActionList{"foo", "ping", "bar", "dabb"}
 	rndCommFn := func() (pkg.ServiceID, pkg.ActionID) {
 		return serLt[rand.Intn(len(serLt))], actLt[rand.Intn(len(actLt))]
 	}
-	const clients = 10
+	const clients = 5
 	const clientCycles = 1000
 	completed := make(chan bool, clients)
 	for client := 0; client < clients; client++ {
@@ -55,8 +52,8 @@ func main() {
 		}(client, completed)
 	}
 	for cap(completed) != len(completed) {
+		// Block until the completed channel fills
 	}
-	//select {}
 	println("Completed")
 }
 

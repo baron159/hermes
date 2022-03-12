@@ -21,7 +21,7 @@ func (s StandardAction) GetHandler() pkg.ContractActionHandler {
 	return func(c *pkg.Contract) {
 		si, _ := c.CurrentStep()
 		c.AppendParams(fmt.Sprintf("%s:%s:passed", si.Id, s.GetId()))
-		dur := rand.Intn(10) * int(time.Second)
+		dur := rand.Intn(10) * int(time.Millisecond)
 		time.Sleep(time.Duration(dur)) // Simulate some load
 	}
 }
