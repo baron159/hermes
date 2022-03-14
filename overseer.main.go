@@ -3,9 +3,11 @@ package hermes
 import (
 	"flag"
 	"fmt"
-	"github.com/baron159/hermes/pkg"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/baron159/hermes/pkg"
 )
 
 type overseer struct {
@@ -73,4 +75,14 @@ func ListServices() (rtnLt []pkg.ServiceID) {
 func NewContract(frtSer pkg.ServiceID, act pkg.ActionID, args ...string) *pkg.Contract {
 	// TODO make sure the service we are being passed is legit, validate action too?
 	return pkg.CreateContract(frtSer, act, args...)
+}
+
+// FetchServiceID takes in a param and returns a only if pkg.ServiceID can match the passed in string as in active Service Map
+func FetchServiceID (n string) (pkg.ServiceID, error) {
+	for s, _ := range _Overseer().serviceMap {
+		if strings.EqualFold(n, s.Id){
+			return *s, nil
+		}
+	}
+	return pkg.ServiceID{}, fmt.Errorf("no active service for: %s", n)
 }

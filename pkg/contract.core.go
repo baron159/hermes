@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Contract is the core data structure for the communication between services
 type Contract struct {
 	id         string
 	startStamp int64 // Used for bench-marking, also used to know if its started?
