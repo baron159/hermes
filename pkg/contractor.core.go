@@ -101,7 +101,14 @@ func (cr *Contractor) Start(args ...int) error {
 	return nil
 }
 
-func (cr *Contractor) Term() error {
+func (cr *Contractor) Term() {
+	// close the job loop(s) first
+	close(cr.jobQueue)
+	// close the service notify channel
+	close(cr.purpose.ID().GetNotify())
+}
+
+func (cr *Contractor) Restart() error {
 	// Closes all channels and sends shut-down signal now the pipe
 	panic("fast term")
 }

@@ -77,12 +77,23 @@ func NewContract(frtSer pkg.ServiceID, act pkg.ActionID, args ...string) *pkg.Co
 	return pkg.CreateContract(frtSer, act, args...)
 }
 
-// FetchServiceID takes in a param and returns a only if pkg.ServiceID can match the passed in string as in active Service Map
-func FetchServiceID (n string) (pkg.ServiceID, error) {
+// FetchServiceID takes in a param and returns only if pkg.ServiceID can match the passed in string as in active Service Map
+func FetchServiceID(n string) (pkg.ServiceID, error) {
 	for s, _ := range _Overseer().serviceMap {
-		if strings.EqualFold(n, s.Id){
+		if strings.EqualFold(n, s.Id) {
 			return *s, nil
 		}
 	}
 	return pkg.ServiceID{}, fmt.Errorf("no active service for: %s", n)
+}
+
+// LookUpServiceID takes in a param and returns only if pkg.ServiceID can match the passed in string as in active Service Map
+//  Exact same method as FetchServiceID except uses the 'okay:bool'
+func LookUpServiceID(n string) (pkg.ServiceID, bool) {
+	for s, _ := range _Overseer().serviceMap {
+		if strings.EqualFold(n, s.Id) {
+			return *s, true
+		}
+	}
+	return pkg.ServiceID{}, false
 }

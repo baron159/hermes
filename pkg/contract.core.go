@@ -3,6 +3,7 @@ package pkg
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"strings"
 	"time"
 )
 
@@ -75,6 +76,27 @@ func (c *Contract) SafelyAttachPayload(i interface{}) error {
 // SetParams Over-writes the existing params if any exist
 func (c *Contract) SetParams(args ...string) {
 	c.Params = args
+}
+
+// ParseParams will only work if the params are using one of the valid sep[:;=]
+func (c *Contract) ParseParams() (rtn map[string]string, err error) {
+	rtn = make(map[string]string)
+	if len(c.Params) == 0 {
+		return
+	}
+	for _, s := range []string{":", ";", "="} {
+		if len(strings.Split(c.Params[0], s)) == 2 {
+			for _, p := range c.Params {
+				ps := strings.Split(p, s)
+				if len(ps) != 2 {
+					err = fmt.Errorf("param used that doesn't match split")
+				}
+				rtn[ps[0]] = ps[1]
+			}
+			break
+		}
+	}
+	return
 }
 
 // AppendParams leaves the existing params
