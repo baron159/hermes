@@ -31,3 +31,12 @@ func (s *ServiceID) GetNotify() NotifyContractor {
 func (am ActionMap) Add(a Action) {
 	am[a.GetId()] = a
 }
+
+// GetActionList returns the ActionList of the ActionMap
+func (am ActionMap) GetActionList() ActionList {
+	rtn := ActionList{}
+	for k, _ := range am {
+		rtn = append(rtn, k)
+	}
+	return rtn
+}
